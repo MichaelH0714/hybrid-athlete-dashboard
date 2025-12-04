@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>10-Week Hybrid Athleticism Program</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Custom Scrollbar for cleaner look */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f5f5f4; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d6d3d1; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8a29e; 
+        }
+        
+        /* Chart Container Specifics */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px; /* Max width constraint */
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px; /* Base height */
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+
+        /* Utility for hiding/showing */
+        .hidden-content {
+            display: none;
+        }
+        .active-tab {
+            border-bottom: 2px solid #ea580c; /* orange-600 */
+            color: #ea580c;
+            font-weight: 600;
+        }
+        .inactive-tab {
+            color: #78716c; /* stone-500 */
+        }
+        .inactive-tab:hover {
+            color: #44403c; /* stone-700 */
+        }
+    </style>
+    <!-- Chosen Palette: Warm Neutrals (Stone/Orange). Stone creates a grounded, organic strength feel, while Orange provides energetic accents for 'Athleticism'. -->
+    <!-- Application Structure Plan: 
+         1. Dashboard Header: High-level overview and 'Why this program'.
+         2. Philosophy & Methodology: Visualizing the 'Hybrid' concept (Radar Chart) and the Periodization timeline (Line Chart) to explain the 10-week journey.
+         3. Interactive Training Hub: The core tool. Users select a Phase to adjust volume/intensity logic, then select a Day to view the specific workout card. This minimizes cognitive load compared to a giant table.
+         4. Protocol Center: Dedicated section for the 'invisible' work: Warm-ups, Mobility, and Recovery/Nutrition, presented as interactive accordions/lists.
+         This structure moves from 'Conceptual Understanding' -> 'Actionable Training' -> 'Supportive Habits'.
+    -->
+    <!-- Visualization & Content Choices:
+         1. Radar Chart (Chart.js): Visualizes the goal (Strength, Power, Mobility, Aesthetics). Justification: Quickly communicates the 'Hybrid' outcome compared to pure powerlifting or bodybuilding.
+         2. Line Chart (Chart.js): Visualizes Volume vs. Intensity over the 3 Phases. Justification: Helps the user understand the 'Linear Periodization' model where reps drop and weight increases.
+         3. Dynamic HTML Cards: Used for the Daily Workouts. Justification: Text-heavy content needs structured, readable layout. JS updates the Sets/Reps based on the selected Phase.
+         4. Accordion/Toggle Lists: For Warm-ups and Recovery. Justification: Reduces clutter, allowing users to focus on one protocol at a time.
+         NO SVG or Mermaid used.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+<body class="bg-stone-50 text-stone-800 font-sans leading-relaxed selection:bg-orange-100 selection:text-orange-800">
+
+    <!-- Navigation / Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-50 border-b border-stone-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <span class="text-2xl font-bold tracking-tight text-stone-900">HYBRID<span class="text-orange-600">10</span></span>
+            </div>
+            <!-- Desktop Navigation -->
+            <nav class="hidden md:flex space-x-8">
+                <button onclick="scrollToSection('methodology')" class="text-sm font-medium hover:text-orange-600 transition-colors">Methodology</button>
+                <button onclick="scrollToSection('training-hub')" class="text-sm font-medium hover:text-orange-600 transition-colors">Training Hub</button>
+                <button onclick="scrollToSection('recovery')" class="text-sm font-medium hover:text-orange-600 transition-colors">Recovery & Protocols</button>
+            </nav>
+            <!-- Mobile Menu Toggle Button -->
+            <div class="md:hidden">
+                <button id="mobile-menu-button" class="text-stone-500 hover:text-stone-900 font-bold p-2" onclick="toggleMobileMenu()">
+                    <!-- Hamburger icon (Unicode) -->
+                    &#9776;
+                </button>
+            </div>
+        </div>
+        <!-- Mobile Navigation Drawer -->
+        <nav id="mobile-menu" class="hidden md:hidden bg-white border-t border-stone-200 py-2">
+            <button onclick="scrollToSection('methodology'); toggleMobileMenu();" class="block w-full text-left px-6 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50 transition-colors">Methodology</button>
+            <button onclick="scrollToSection('training-hub'); toggleMobileMenu();" class="block w-full text-left px-6 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50 transition-colors">Training Hub</button>
+            <button onclick="scrollToSection('recovery'); toggleMobileMenu();" class="block w-full text-left px-6 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50 transition-colors">Recovery & Protocols</button>
+        </nav>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-16">
+
+        <!-- Intro Section -->
+        <section class="text-center space-y-4 max-w-3xl mx-auto">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-stone-900 tracking-tight">Build the Total Athlete</h1>
+            <p class="text-lg text-stone-600">
+                A 10-week tiered program designed to maximize strength, explosiveness, athleticism, and mobility. 
+                Move fast, lift heavy, and stay mobile.
+            </p>
+        </section>
+
+        <!-- Methodology & Analytics Section -->
+        <section id="methodology" class="space-y-8">
+            <div class="border-l-4 border-orange-600 pl-4">
+                <h2 class="text-2xl font-bold text-stone-900">Program Methodology</h2>
+                <p class="text-stone-600 mt-2 max-w-2xl">
+                    Unlike standard bodybuilding or powerlifting splits, this hybrid approach balances conflicting demands. 
+                    We cycle through 3 phases to ensure you peak in performance without burning out.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+                
+                <!-- Chart 1: The Hybrid Target -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-100 flex flex-col">
+                    <h3 class="text-lg font-semibold mb-2">The Hybrid Profile</h3>
+                    <p class="text-sm text-stone-500 mb-4">Goal outcome compared to standard training.</p>
+                    <div class="flex-grow flex items-center justify-center bg-stone-50 rounded-lg p-2">
+                        <div class="chart-container">
+                            <canvas id="attributeChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="mt-4 text-xs text-stone-400 text-center">
+                        Balanced development across 4 key domains.
+                    </div>
+                </div>
+
+                <!-- Chart 2: Periodization Model -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-100 flex flex-col">
+                    <h3 class="text-lg font-semibold mb-2">Linear Periodization</h3>
+                    <p class="text-sm text-stone-500 mb-4">Volume decreases while intensity increases over 10 weeks.</p>
+                    <div class="flex-grow flex items-center justify-center bg-stone-50 rounded-lg p-2">
+                        <div class="chart-container">
+                            <canvas id="periodizationChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="mt-4 grid grid-cols-3 gap-2 text-center text-xs text-stone-500">
+                        <div>
+                            <span class="font-bold block text-stone-800">Phase 1</span>
+                            Foundation
+                        </div>
+                        <div>
+                            <span class="font-bold block text-stone-800">Phase 2</span>
+                            Strength
+                        </div>
+                        <div>
+                            <span class="font-bold block text-stone-800">Phase 3</span>
+                            Peaking
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Interactive Training Hub -->
+        <section id="training-hub" class="space-y-6">
+            <div class="border-l-4 border-orange-600 pl-4 flex justify-between items-end">
+                <div>
+                    <h2 class="text-2xl font-bold text-stone-900">Training Hub</h2>
+                    <p class="text-stone-600 mt-2">
+                        Select your current Phase to adjust the programming, then choose a Day to view your mission.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Phase Selector Controls -->
+            <div class="flex flex-col sm:flex-row bg-white rounded-lg shadow-sm border border-stone-200 overflow-hidden">
+                <button id="btn-phase-1" class="flex-1 py-4 px-6 text-center transition-colors active-tab" onclick="setPhase(1)">
+                    <span class="block text-xs font-bold uppercase tracking-wider mb-1">Weeks 1-3</span>
+                    <span class="text-lg font-bold">Phase 1: Foundation</span>
+                    <span class="block text-xs mt-1 opacity-75">Work Capacity & Form</span>
+                </button>
+                <div class="w-px bg-stone-200 hidden sm:block"></div>
+                <button id="btn-phase-2" class="flex-1 py-4 px-6 text-center transition-colors inactive-tab" onclick="setPhase(2)">
+                    <span class="block text-xs font-bold uppercase tracking-wider mb-1">Weeks 4-7</span>
+                    <span class="text-lg font-bold">Phase 2: Strength</span>
+                    <span class="block text-xs mt-1 opacity-75">Intensity Spike</span>
+                </button>
+                <div class="w-px bg-stone-200 hidden sm:block"></div>
+                <button id="btn-phase-3" class="flex-1 py-4 px-6 text-center transition-colors inactive-tab" onclick="setPhase(3)">
+                    <span class="block text-xs font-bold uppercase tracking-wider mb-1">Weeks 8-10</span>
+                    <span class="text-lg font-bold">Phase 3: Peak</span>
+                    <span class="block text-xs mt-1 opacity-75">Maximal Intent</span>
+                </button>
+            </div>
+
+            <!-- Current Phase Context Bar -->
+            <div id="phase-context-bar" class="bg-orange-50 text-orange-900 px-6 py-3 rounded-md text-sm font-medium flex flex-wrap gap-4 items-center justify-between">
+                <!-- Content injected by JS -->
+            </div>
+
+            <!-- Day Selector -->
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+                <button onclick="renderDay(1)" class="day-btn bg-white hover:bg-stone-50 border border-stone-200 rounded-lg p-3 text-center transition-all focus:ring-2 focus:ring-orange-500 focus:border-orange-500" data-day="1">
+                    <span class="block text-xs text-stone-400 font-bold uppercase">Day 1</span>
+                    <span class="font-bold text-stone-800">Lower A</span>
+                </button>
+                <button onclick="renderDay(2)" class="day-btn bg-white hover:bg-stone-50 border border-stone-200 rounded-lg p-3 text-center transition-all focus:ring-2 focus:ring-orange-500 focus:border-orange-500" data-day="2">
+                    <span class="block text-xs text-stone-400 font-bold uppercase">Day 2</span>
+                    <span class="font-bold text-stone-800">Upper A</span>
+                </button>
+                <button onclick="renderDay(3)" class="day-btn bg-white hover:bg-stone-50 border border-stone-200 rounded-lg p-3 text-center transition-all focus:ring-2 focus:ring-orange-500 focus:border-orange-500" data-day="3">
+                    <span class="block text-xs text-stone-400 font-bold uppercase">Day 3</span>
+                    <span class="font-bold text-green-700">Active Recovery</span>
+                </button>
+                <button onclick="renderDay(4)" class="day-btn bg-white hover:bg-stone-50 border border-stone-200 rounded-lg p-3 text-center transition-all focus:ring-2 focus:ring-orange-500 focus:border-orange-500" data-day="4">
+                    <span class="block text-xs text-stone-400 font-bold uppercase">Day 4</span>
+                    <span class="font-bold text-stone-800">Lower B</span>
+                </button>
+                <button onclick="renderDay(5)" class="day-btn bg-white hover:bg-stone-50 border border-stone-200 rounded-lg p-3 text-center transition-all focus:ring-2 focus:ring-orange-500 focus:border-orange-500" data-day="5">
+                    <span class="block text-xs text-stone-400 font-bold uppercase">Day 5</span>
+                    <span class="font-bold text-stone-800">Upper B</span>
+                </button>
+            </div>
+
+            <!-- Daily Workout View -->
+            <div id="workout-card" class="bg-white border border-stone-200 rounded-xl shadow-lg p-6 md:p-8 animate-fade-in">
+                <!-- Content injected by JS -->
+            </div>
+
+        </section>
+
+        <!-- Recovery & Protocols -->
+        <section id="recovery" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-3 border-l-4 border-orange-600 pl-4">
+                <h2 class="text-2xl font-bold text-stone-900">Protocols & Recovery</h2>
+                <p class="text-stone-600 mt-2">Athleticism is built in the recovery. Do not skip these steps.</p>
+            </div>
+
+            <!-- Warm Up Protocol -->
+            <div class="bg-stone-100 rounded-xl p-6">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="bg-orange-600 text-white p-2 rounded-lg font-bold text-xl">&#9889;</span>
+                    <h3 class="text-xl font-bold text-stone-900">Warm-Up (Mandatory)</h3>
+                </div>
+                <p class="text-sm text-stone-600 mb-4">Perform before every session. Critical for explosiveness.</p>
+                <ul class="space-y-3">
+                    <li class="flex items-start gap-3 bg-white p-3 rounded-md shadow-sm">
+                        <span class="text-orange-600 font-bold">1</span>
+                        <div class="text-sm">
+                            <span class="font-bold block">5 Min Cardio</span>
+                            Row, Bike, or Elliptical.
+                        </div>
+                    </li>
+                    <li class="flex items-start gap-3 bg-white p-3 rounded-md shadow-sm">
+                        <span class="text-orange-600 font-bold">2</span>
+                        <div class="text-sm">
+                            <span class="font-bold block">Dynamic Activation</span>
+                            Leg Swings, Arm Circles, Hip Circles.
+                        </div>
+                    </li>
+                    <li class="flex items-start gap-3 bg-white p-3 rounded-md shadow-sm">
+                        <span class="text-orange-600 font-bold">3</span>
+                        <div class="text-sm">
+                            <span class="font-bold block">Movement Prep</span>
+                            Bodyweight Squats, Lunges, Piston Hops.
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Nutrition & Sleep -->
+            <div class="bg-stone-100 rounded-xl p-6">
+                 <div class="flex items-center gap-3 mb-4">
+                    <span class="bg-stone-800 text-white p-2 rounded-lg font-bold text-xl">&#128164;</span>
+                    <h3 class="text-xl font-bold text-stone-900">Recovery Fuel</h3>
+                </div>
+                 <p class="text-sm text-stone-600 mb-4">You only grow when you rest.</p>
+                 <div class="space-y-4">
+                     <div class="bg-white p-4 rounded-md shadow-sm border-l-4 border-blue-500">
+                         <h4 class="font-bold text-stone-900">Sleep</h4>
+                         <p class="text-sm text-stone-600 mt-1">Target 7-9 hours. This is when hormonal regulation happens.</p>
+                     </div>
+                     <div class="bg-white p-4 rounded-md shadow-sm border-l-4 border-green-500">
+                         <h4 class="font-bold text-stone-900">Protein</h4>
+                         <p class="text-sm text-stone-600 mt-1">1.6g - 2.2g per kg of body weight daily.</p>
+                     </div>
+                     <div class="bg-white p-4 rounded-md shadow-sm border-l-4 border-yellow-500">
+                         <h4 class="font-bold text-stone-900">Hydration</h4>
+                         <p class="text-sm text-stone-600 mt-1">Water + Electrolytes essential for power output.</p>
+                     </div>
+                 </div>
+            </div>
+
+            <!-- Training Notes -->
+            <div class="bg-stone-100 rounded-xl p-6">
+                <div class="flex items-center gap-3 mb-4">
+                   <span class="bg-stone-800 text-white p-2 rounded-lg font-bold text-xl">&#128221;</span>
+                   <h3 class="text-xl font-bold text-stone-900">Coach's Notes</h3>
+               </div>
+               <div class="space-y-4 text-sm text-stone-700">
+                   <p><strong class="text-orange-600">Power Execution:</strong> Rest 90-120s. Every rep must have MAXIMAL intent, even if the weight moves slow.</p>
+                   <p><strong class="text-orange-600">Strength Execution:</strong> Follow the RPE (Rate of Perceived Exertion). If form breaks, drop weight.</p>
+                   <p><strong class="text-orange-600">Pain vs. Soreness:</strong> Joint pain = Stop/Swap. Muscle soreness = Go.</p>
+               </div>
+           </div>
+
+        </section>
+
+    </main>
+
+    <footer class="bg-stone-900 text-stone-400 py-12 mt-12">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p class="font-bold text-stone-100 mb-2">HYBRID<span class="text-orange-500">10</span></p>
+            <p class="text-sm">Generated for Educational Purposes based on the 10-Week Hybrid Program Source Report.</p>
+            <p class="text-xs mt-4 opacity-50">&copy; 2025 Athletic Performance Interface</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- State Management ---
+        const state = {
+            currentPhase: 1,
+            currentDay: 1
+        };
+
+        // --- Data: Source Report Content ---
+        const phases = {
+            1: {
+                title: "Foundation",
+                weeks: "1-3",
+                focus: "Work Capacity & Form",
+                power: { sets: "3", reps: "6-8", effort: "Sub-maximal focus on landing" },
+                strength: { sets: "4", reps: "8-10", rpe: "7/10 (2-3 reps reserve)" },
+                accessory: { sets: "3", reps: "12-15", effort: "Control & Time Under Tension" }
+            },
+            2: {
+                title: "Strength & Power",
+                weeks: "4-7",
+                focus: "Intensity Spike",
+                power: { sets: "4", reps: "4-5", effort: "Max speed, 90-120s rest" },
+                strength: { sets: "5", reps: "5", rpe: "8.5/10 (1 rep reserve)" },
+                accessory: { sets: "3", reps: "8-12", effort: "Heavier weight" }
+            },
+            3: {
+                title: "Peak & Athleticism",
+                weeks: "8-10",
+                focus: "Highest Intensity",
+                power: { sets: "5", reps: "3", effort: "MAXIMAL intent. 120-180s rest" },
+                strength: { sets: "3", reps: "3", rpe: "9.5/10 (Top set close to failure)" },
+                accessory: { sets: "4", reps: "6-8", effort: "Heavy unilateral work" }
+            }
+        };
+
+        const workouts = {
+            1: {
+                title: "Lower Body A",
+                focus: "Squat Pattern & Vertical Power",
+                exercises: [
+                    { type: "A", name: "Box Jumps OR Vertical Jumps", category: "Power" },
+                    { type: "B", name: "Barbell Back Squat", category: "Strength" },
+                    { type: "C", name: "Bulgarian Split Squat (R/L)", category: "Accessory" },
+                    { type: "C", name: "Glute Ham Raise / Hamstring Curl", category: "Accessory" },
+                    { type: "D", name: "Plank Row (R/L)", category: "Core" },
+                    { type: "D", name: "Cable Chop (R/L)", category: "Core" }
+                ]
+            },
+            2: {
+                title: "Upper Body A",
+                focus: "Overhead Push & Vertical Pull",
+                exercises: [
+                    { type: "A", name: "Med Ball Overhead Slam", category: "Power" },
+                    { type: "B", name: "Overhead Press (Standing)", category: "Strength" },
+                    { type: "C", name: "Pull-ups / Lat Pulldown", category: "Accessory" },
+                    { type: "C", name: "Dumbbell Bench Press (Neutral)", category: "Accessory" },
+                    { type: "D", name: "Kettlebell Windmill (R/L)", category: "Core" },
+                    { type: "D", name: "Ab Rollout", category: "Core" }
+                ]
+            },
+            3: {
+                title: "Mobility & Conditioning",
+                focus: "Active Recovery",
+                isRecovery: true,
+                content: [
+                    { header: "Warm-up", text: "15 min foam roll / dynamic stretching." },
+                    { header: "Circuit (4 Rounds)", text: "Kettlebell Swing, Goblet Squat, Push-up, Row (30s work / 15s rest)." },
+                    { header: "Mobility Flow", text: "Cat-Cow, World’s Greatest Stretch, Hip 90/90, T-Spine Rotation." },
+                    { header: "Cool Down", text: "Static stretching (10 min)." }
+                ]
+            },
+            4: {
+                title: "Lower Body B",
+                focus: "Hinge Pattern & Horizontal Power",
+                exercises: [
+                    { type: "A", name: "Broad Jumps OR Hurdle Hops", category: "Power" },
+                    { type: "B", name: "Deadlift (Conventional or Trap Bar)", category: "Strength" },
+                    { type: "C", name: "Reverse Lunges (Dumbbell)", category: "Accessory" },
+                    { type: "C", name: "Single-Leg RDL (Dumbbell)", category: "Accessory" },
+                    { type: "D", name: "Suitcase Carry (R/L)", category: "Core" },
+                    { type: "D", name: "Hanging Leg Raise / Knee Tuck", category: "Core" }
+                ]
+            },
+            5: {
+                title: "Upper Body B",
+                focus: "Horizontal Push & Horizontal Pull",
+                exercises: [
+                    { type: "A", name: "Plyometric Push-ups", category: "Power" },
+                    { type: "B", name: "Barbell Bench Press", category: "Strength" },
+                    { type: "C", name: "Barbell Row (Pendlay/Bent-over)", category: "Accessory" },
+                    { type: "C", name: "Face Pulls (Bands/Cable)", category: "Accessory" },
+                    { type: "D", name: "Farmers Walk (Heavy)", category: "Core" },
+                    { type: "D", name: "Side Plank (R/L)", category: "Core" }
+                ]
+            }
+        };
+
+        // --- Core Functions ---
+
+        function setPhase(phaseId) {
+            state.currentPhase = phaseId;
+            
+            // Update Tab Styles
+            [1, 2, 3].forEach(id => {
+                const btn = document.getElementById(`btn-phase-${id}`);
+                if (id === phaseId) {
+                    btn.classList.add('active-tab', 'bg-orange-50');
+                    btn.classList.remove('inactive-tab');
+                } else {
+                    btn.classList.remove('active-tab', 'bg-orange-50');
+                    btn.classList.add('inactive-tab');
+                }
+            });
+
+            // Update Phase Context Bar
+            const pData = phases[phaseId];
+            const bar = document.getElementById('phase-context-bar');
+            bar.innerHTML = `
+                <div class="flex flex-col md:flex-row gap-4 w-full justify-between">
+                    <div><span class="font-bold opacity-70">Power Target:</span> ${pData.power.sets} x ${pData.power.reps}</div>
+                    <div><span class="font-bold opacity-70">Strength Target:</span> ${pData.strength.sets} x ${pData.strength.reps}</div>
+                    <div><span class="font-bold opacity-70">RPE:</span> ${pData.strength.rpe}</div>
+                </div>
+            `;
+
+            // Re-render current day with new phase logic
+            renderDay(state.currentDay);
+        }
+
+        function renderDay(dayId) {
+            state.currentDay = dayId;
+            
+            // Update Day Buttons styling
+            document.querySelectorAll('.day-btn').forEach(btn => {
+                const d = parseInt(btn.dataset.day);
+                if (d === dayId) {
+                    btn.classList.add('ring-2', 'ring-orange-500', 'border-orange-500', 'bg-orange-50');
+                } else {
+                    btn.classList.remove('ring-2', 'ring-orange-500', 'border-orange-500', 'bg-orange-50');
+                }
+            });
+
+            const card = document.getElementById('workout-card');
+            const data = workouts[dayId];
+            const pData = phases[state.currentPhase];
+
+            // Handle Recovery Day Special Case
+            if (data.isRecovery) {
+                card.innerHTML = `
+                    <div class="flex justify-between items-start border-b border-stone-100 pb-4 mb-6">
+                        <div>
+                            <span class="bg-green-100 text-green-800 text-xs font-bold px-2 py-1 rounded uppercase tracking-wide">Day ${dayId}</span>
+                            <h3 class="text-3xl font-bold text-stone-900 mt-2">${data.title}</h3>
+                            <p class="text-stone-500 italic">${data.focus}</p>
+                        </div>
+                        <div class="text-4xl">&#129496;</div>
+                    </div>
+                    <div class="space-y-6">
+                        ${data.content.map(item => `
+                            <div class="bg-stone-50 p-4 rounded-lg border-l-4 border-green-500">
+                                <h4 class="font-bold text-stone-800">${item.header}</h4>
+                                <p class="text-stone-600">${item.text}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                return;
+            }
+
+            // Standard Workout Render
+            let html = `
+                <div class="flex justify-between items-start border-b border-stone-100 pb-4 mb-6">
+                    <div>
+                        <span class="bg-stone-100 text-stone-600 text-xs font-bold px-2 py-1 rounded uppercase tracking-wide">Day ${dayId}</span>
+                        <h3 class="text-3xl font-bold text-stone-900 mt-2">${data.title}</h3>
+                        <p class="text-stone-500 italic">${data.focus}</p>
+                    </div>
+                    <div class="text-right hidden sm:block">
+                        <div class="text-xs text-stone-400 uppercase font-bold">Phase ${state.currentPhase}</div>
+                        <div class="text-sm font-bold text-orange-600">${pData.title}</div>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="text-stone-400 text-xs uppercase tracking-wider border-b border-stone-200">
+                                <th class="pb-3 w-1/12">Type</th>
+                                <th class="pb-3 w-5/12">Exercise</th>
+                                <th class="pb-3 w-3/12">Sets x Reps</th>
+                                <th class="pb-3 w-3/12">Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-sm">
+            `;
+
+            data.exercises.forEach(ex => {
+                let setsReps = "";
+                let notes = "";
+                let badgeColor = "";
+
+                if (ex.type === "A") { // Power
+                    setsReps = `${pData.power.sets} x ${pData.power.reps}`;
+                    notes = "Max Intent / 90s Rest";
+                    badgeColor = "bg-red-100 text-red-800";
+                } else if (ex.type === "B") { // Strength
+                    setsReps = `${pData.strength.sets} x ${pData.strength.reps}`;
+                    notes = `RPE: ${pData.strength.rpe.split(' ')[0]}`;
+                    badgeColor = "bg-orange-100 text-orange-800";
+                } else if (ex.type === "C") { // Accessory
+                    setsReps = `${pData.accessory.sets} x ${pData.accessory.reps}`;
+                    notes = "Controlled";
+                    badgeColor = "bg-blue-100 text-blue-800";
+                } else { // Core
+                    setsReps = "3 Rounds";
+                    notes = "Finisher Circuit";
+                    badgeColor = "bg-stone-200 text-stone-600";
+                }
+
+                html += `
+                    <tr class="border-b border-stone-50 hover:bg-stone-50 transition-colors">
+                        <td class="py-4 font-bold text-stone-400">${ex.type}</td>
+                        <td class="py-4 font-medium text-stone-900">
+                            ${ex.name}
+                            <span class="block text-xs text-stone-400 font-normal">${ex.category}</span>
+                        </td>
+                        <td class="py-4 font-bold text-stone-700">${setsReps}</td>
+                        <td class="py-4 text-xs text-stone-500">
+                            <span class="${badgeColor} px-2 py-1 rounded">${notes}</span>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            card.innerHTML = html;
+        }
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        function scrollToSection(id) {
+            document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // --- Visualizations ---
+
+        function initCharts() {
+            // Radar Chart: Attribute Goals
+            const ctxRadar = document.getElementById('attributeChart').getContext('2d');
+            new Chart(ctxRadar, {
+                type: 'radar',
+                data: {
+                    labels: ['Strength', 'Explosiveness', 'Mobility', 'Endurance', 'Hypertrophy'],
+                    datasets: [{
+                        label: 'Target Hybrid Profile',
+                        data: [90, 85, 80, 70, 75], // High across board
+                        fill: true,
+                        backgroundColor: 'rgba(234, 88, 12, 0.2)', // Orange-600
+                        borderColor: 'rgb(234, 88, 12)',
+                        pointBackgroundColor: 'rgb(234, 88, 12)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgb(234, 88, 12)'
+                    }, {
+                        label: 'Typical Powerlifter',
+                        data: [95, 40, 30, 20, 80], // Strong but immobile
+                        fill: true,
+                        backgroundColor: 'rgba(120, 113, 108, 0.1)', // Stone-500
+                        borderColor: 'rgba(120, 113, 108, 0.5)',
+                        borderDash: [5, 5],
+                        pointRadius: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: { color: '#e7e5e4' },
+                            grid: { color: '#e7e5e4' },
+                            pointLabels: {
+                                font: { size: 12, family: 'sans-serif', weight: 'bold' },
+                                color: '#44403c'
+                            },
+                            ticks: { display: false, max: 100 }
+                        }
+                    },
+                    plugins: {
+                        legend: { position: 'bottom', labels: { usePointStyle: true, color: '#44403c' } }
+                    }
+                }
+            });
+
+            // Line Chart: Periodization
+            const ctxLine = document.getElementById('periodizationChart').getContext('2d');
+            new Chart(ctxLine, {
+                type: 'line',
+                data: {
+                    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6', 'Week 7', 'Week 8', 'Week 9', 'Week 10'],
+                    datasets: [
+                        {
+                            label: 'Intensity (Weight/Effort)',
+                            data: [60, 65, 70, 75, 80, 82, 85, 90, 92, 95],
+                            borderColor: 'rgb(234, 88, 12)', // Orange
+                            backgroundColor: 'rgb(234, 88, 12)',
+                            yAxisID: 'y',
+                            tension: 0.3
+                        },
+                        {
+                            label: 'Volume (Total Reps)',
+                            data: [90, 88, 85, 70, 68, 65, 62, 50, 45, 40],
+                            borderColor: 'rgb(68, 64, 60)', // Stone-700
+                            backgroundColor: 'rgb(68, 64, 60)',
+                            yAxisID: 'y1',
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#78716c', maxRotation: 45, minRotation: 45 }
+                        },
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: { display: true, text: 'Intensity %' },
+                            grid: { color: '#f5f5f4' }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: { display: true, text: 'Volume Index' },
+                            grid: { display: false }
+                        },
+                    },
+                    plugins: {
+                        legend: { position: 'bottom', labels: { usePointStyle: true } },
+                        tooltip: {
+                            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                            titleColor: '#1c1917',
+                            bodyColor: '#44403c',
+                            borderColor: '#e7e5e4',
+                            borderWidth: 1,
+                            padding: 10
+                        }
+                    }
+                }
+            });
+        }
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            initCharts();
+            setPhase(1); // Default to Phase 1
+            renderDay(1); // Default to Day 1
+        });
+
+    </script>
+</body>
+</html>
